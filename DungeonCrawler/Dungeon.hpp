@@ -1,7 +1,11 @@
-#ifndef DUNGEON_H
-#define DUNGEON_H
 
-#include "Game.hpp"
+#include <cstdint>
+#include <vector>
+
+#ifndef DUNGEON_HPP
+#define DUNGEON_HPP
+
+using namespace std;
 
 enum class RoomType
 {
@@ -22,6 +26,14 @@ enum class RoomType
 
 class Room
 {
+private:
+    
+    //Room init functions
+    void initRoomType(RoomType pType);
+    void initPositions();
+    void initDimensions(float x, float y);
+    void initPointers();
+
 public:
 
     //Room gameplay properties
@@ -31,12 +43,12 @@ public:
     bool visited;
 
     //Room Positional Properties
-    uint16_t x;
-    uint16_t y;
+    int posX;
+    int posY;
 
     //Room physical properties
-    uint8_t height;
-    uint8_t width;
+    uint16_t height;
+    uint16_t width;
 
     //Adjacent room pointers
     Room* north;
@@ -45,13 +57,13 @@ public:
     Room* south;
 
     //Constructors / Destructors
-    Room() : type(RoomType::Empty), visited(false), north(nullptr), east(nullptr), west(nullptr), south(nullptr), x(0), y(0) {}
+    Room();
     ~Room();
 
-    uint16_t getRoomX();
-    uint16_t getRoomY();
-};
+    //Functions
+    void checkAdjacent();
 
+};
 
 class Dungeon
 {
@@ -61,21 +73,25 @@ private:
     uint8_t width;
     uint8_t height;
 
+    //Init functions
+    void initMap();
 public:
-    //2D map vector
-    Room** map;
+
+    //Game state variables
+    vector<vector<Room*>> map;
+    Room* currentRoom;
 
     //Constuctor / Destructor
-    Dungeon(uint8_t pWidth, uint8_t pHeight);
+    Dungeon();
     ~Dungeon();
 
     //Functions
     void allocateMemory();
     void setupConnections();
-    void generateRooms();
-    void setCurrentRoom();
+    void initCurrentRoom();
+    void removeEmptyRooms();
 
 };
 
 
-#endif // DUNGEON_H
+#endif // DUNGEON_HPP

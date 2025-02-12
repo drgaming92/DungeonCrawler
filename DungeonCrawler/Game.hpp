@@ -1,17 +1,20 @@
-#ifndef GAME_H
-#define GAME_H
-
-#include "Dungeon.hpp"
+#ifndef GAME_HPP
+#define GAME_HPP
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 #include <cstdint>
+#include <ctime>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <random>
 #include <string>
 #include <vector>
+
+#include "Dungeon.hpp"
+#include "Player.hpp"
 
 using namespace sf;
 
@@ -22,19 +25,27 @@ private:
 	uint8_t maxSprites = 127;
 
 	//Window
-	RenderWindow* window;
+	shared_ptr<RenderWindow> window;
 
 	//Mouse Positions
 	Vector2i mousePosWindow;
 	Vector2f mousPosView;
 
-	//Game Objects
+	//Game Object Pointers
 	Dungeon* dungeon;
+	Room* currentRoomGame;
+	Player* player;
+
+	//Game Object Shape Pointers
+	RectangleShape* currentRoomShape;
+	RectangleShape* playerShape;
 
 	//Init functions
 	void initVariables();
 	void initWindow();
 	void initDungeon();
+	void initCurrentRoom();
+	void initPlayer();
 
 public:
 
@@ -48,11 +59,13 @@ public:
 	//Update functions
 	void updateEvents();
 	void updateMousePositions();
-	void updateRoomPositions();
+	void updateCurrentRoom();
+	void updatePlayer();
 	void update();
 
 	//Render Functions
-	void renderRooms();
+	void renderCurrentRoom();
+	void renderPlayer();
 	void render();
 
 };
