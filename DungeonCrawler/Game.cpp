@@ -6,53 +6,74 @@ using namespace sf;
 	INIT
 	FUNCTIONS
 */
-void Game::initVariables()
-{
-	this->window = nullptr;
-}
-
 void Game::initWindow()
 {
-	this->window = make_shared<RenderWindow>(VideoMode({ 1280, 720 }), "Mystik", Style::Titlebar | Style::Close);
+	this->window = new RenderWindow(VideoMode({ 1280, 720 }), "Mystik", Style::Titlebar | Style::Close);
 
 	this->window->setFramerateLimit(60);
+}
+
+void Game::initCamera()
+{
+	this->camera = Camera();
 }
 
 void Game::initDungeon()
 {
 	uint8_t width = 16;
 	uint8_t height = 16;
-	this->dungeon = new Dungeon();
-}
-
-void Game::initCurrentRoom()
-{
-	this->currentRoomGame = this->dungeon->currentRoom;
+	this->dungeon = Dungeon();
 }
 
 void Game::initPlayer()
 {
-	this->player = new Player(this->window);
-	this->playerShape = new RectangleShape({ static_cast<float>(this->player->width), static_cast<float>(this->player->height) });
-	this->playerShape->setFillColor(Color::Green);
+	this->player = Player();
 }
+
+void Game::initEnemies(uint16_t numOfEnemies)
+{
+	this->enemies.reserve(static_cast<int>(this->maxSprites));
+	if (numOfEnemies > this->maxSprites)
+	{
+		this->enemies.resize(static_cast<int>(this->maxSprites));
+	}
+	else
+	{
+		this->enemies.resize(static_cast<int>(numOfEnemies));
+	}
+	for (auto& enemy : this->enemies)
+	{
+		enemy = new Enemy();
+	}
+}
+
+/*
+	PRIVATE
+	FUNCTIONS
+*/
 
 
 /*
-	CONSTRUCTOR / DECONSTRUCTOR
+	CONSTRUCTORS
+	DECONSTRUCTORS
 */
 Game::Game()
 {
-	this->initVariables();
 	this->initWindow();
 	this->initDungeon();
-	this->initCurrentRoom();
 	this->initPlayer();
+
+	uint16_t numOfEnemies = 5;
+	this->initEnemies(numOfEnemies);
 }
 
 Game::~Game()
 {
-	
+	delete this->window;
+	for (auto& enemy : this->enemies)
+	{
+		delete enemy;
+	}
 }
 
 
@@ -66,13 +87,51 @@ const bool Game::isRunning()
 
 
 /*
-	UPDATE FUNCTIONS
+	UPDATE
+	FUNCTIONS
 */
+void Game::updateGameView()
+{
+	/*
+		@return void
+
+		Sets the view to the player
+		see "Camera.cpp > Public Functions > updateGameCenter" for information
+	*/
+	this->camera.updateGameCenter(this->player.getPlayerPos(), this->player.getMomentum());
+}
+
+void Game::updatePlayer()
+{
+	/*
+		@return void
+
+		Sets new position based on input from player
+		see "Player.cpp > Update Functions > updatePosition" for information
+	*/
+	this->player.updatePosition();
+}
+
+void Game::updateEnemies()
+{
+	for (auto& enemy : this->enemies)
+	{
+		enemy->moveTowardsStop();
+	}
+}
+
 void Game::updateEvents()
 {
+	/*
+		@return void
+
+		Handles incoming events
+		NOTE: all input for the player character is handled in "Player.cpp > Update Functions"
+	*/
+
 	while (const std::optional event = this->window->pollEvent())
 	{
-		//Window closing
+		//Window closed
 		if (event->is<Event::Closed>())
 		{
 			this->window->close();
@@ -83,68 +142,123 @@ void Game::updateEvents()
 
 void Game::updateMousePositions()
 {
+
+	/*
+		@return void
+
+		Gets mouse position
+		- Get mouse position from the window
+		- Get mouse position from the view
+	*/
+
 	this->mousePosWindow = Mouse::getPosition(*this->window);
 
 	this->mousPosView = this->window->mapPixelToCoords(this->mousePosWindow);
 }
 
-void Game::updateCurrentRoom()
-{
-	this->currentRoomShape = new RectangleShape({ static_cast<float>(this->currentRoomGame->width), static_cast<float>(this->currentRoomGame->height) });
-	this->currentRoomShape->setPosition({
-		static_cast<float>(this->dungeon->currentRoom->posX),
-		static_cast<float>(this->dungeon->currentRoom->posY)
-		} );
-	this->currentRoomShape->setFillColor(Color::White);
-
-}
-
-void Game::updatePlayer()
-{
-	this->player->getMovement();
-
-	this->playerShape->setPosition({
-		static_cast<float>(this->player->posX),
-		static_cast<float>(this->player->posY)
-		});
-}
-
 //Master Update Function
 void Game::update()
 {
-	this->updateEvents();
 
+	//Update views
+	this->updateGameView();
+
+	//Update game objects
+	this->updatePlayer();
+	this->updateEnemies();
+
+	//Update Collisions
+	this->handleCollisions();
+
+	//Update mouse positions
 	this->updateMousePositions();
 
-	this->updateCurrentRoom();
-
-	this->updatePlayer();
-
+	//Update events
+	this->updateEvents();
 }
 
 
 /*
-	RENDER FUNCTIONS
+	COLLISION
+	FUNCTIONS
+*/
+
+optional<IntRect> Game::checkPlayerEnemyCollisions()
+{
+	bool collision = false;
+	optional<IntRect> intersection;
+	for (auto& enemy : this->enemies)
+	{
+		intersection = enemy->checkCollisionWith(this->player.getPlayerBounds());
+		if (intersection.has_value())
+		{
+			cout << "Collision Detected" << endl;
+			collision = true;
+			return intersection;
+		}
+	}
+	return intersection;
+}
+
+//Master collision function
+void Game::handleCollisions()
+{
+	optional<IntRect> playerEnemyIntersection = this->checkPlayerEnemyCollisions();
+	if (playerEnemyIntersection.has_value())
+	{
+		this->player.handleEnemyCollision(playerEnemyIntersection);
+	}
+}
+
+
+/*
+	RENDER
+	FUNCTIONS
 */
 void Game::renderCurrentRoom()
 {
-	this->window->draw(*this->currentRoomShape);
+	/*
+		@return void
+
+		renders the current room
+		see "Dungeon.cpp > Render Functions > renderRoom"
+	*/
+
+	this->dungeon.renderRoom(this->window);
 }
 
 void Game::renderPlayer()
 {
-	this->window->draw(*this->playerShape);
+	Sprite playerSprite(this->player.playerTexture);
+	this->player.render(playerSprite, this->window);
+}
+
+void Game::renderEnemies()
+{
+	for (auto& enemy : this->enemies)
+	{
+		Texture enemyTexture = enemy->enemyTexture;
+		Sprite enemySprite(enemyTexture);
+		enemy->render(enemySprite, this->window);
+	}
 }
 
 //Master Render Function
 void Game::render()
 {
+	//Clear the old frame
 	this->window->clear(Color::Black);
 
-	//draw
+	//Render Game Objects
+	this->window->setView(this->camera.gameView);
+
 	this->renderCurrentRoom();
+	this->renderEnemies();
 	this->renderPlayer();
 
+	//Render ui (coming soon)
+
+	//Display
 	this->window->display();
 }
 

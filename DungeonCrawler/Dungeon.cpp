@@ -1,11 +1,17 @@
 #include "Game.hpp"
 
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+
 using namespace std;
 
+
+//=================================
 /*
     ROOM CLASS
     FUNCTIONS
 */
+//=================================
 
 //Init Functions
 void Room::initRoomType(RoomType pType)
@@ -15,8 +21,8 @@ void Room::initRoomType(RoomType pType)
 
 void Room::initPositions()
 {
-    this->posX = 0;
-    this->posY = 0;
+    this->posX = 0.f;
+    this->posY = 0.f;
 }
 
 void Room::initDimensions(float pHeight, float pWidth)
@@ -57,7 +63,6 @@ Room::Room()
     this->initDimensions(randomHeight, randomWidth);
 
     this->initPointers();
-    cout << "Pointers set to null" << endl;
 
 }
 
@@ -92,10 +97,13 @@ void Room::checkAdjacent()
 }
 
 
+
+//=====================================
 /*
     DUNGEON CLASS
     FUNCTIONS
 */
+//=====================================
 
 //Init functions
 void Dungeon::initMap()
@@ -106,13 +114,20 @@ void Dungeon::initMap()
 //Constructors / Destructors
 Dungeon::Dungeon()
 {
+    //Init map size
     this->height = 8;
     this->width = 8;
     this->initMap();
 
+
+    //Init map data
     this->allocateMemory();
     this->setupConnections();
-    this->initCurrentRoom();
+    this->setCurrentRoom();
+
+    //Init room shape values
+    this->initRoomShape();
+
 }
 
 Dungeon::~Dungeon()
@@ -154,7 +169,6 @@ void Dungeon::allocateMemory()
         for (auto& roomPtr : row)
         {
             roomPtr = new Room();
-            cout << "New room created" << endl;
         }
     }
 
@@ -184,12 +198,12 @@ void Dungeon::setupConnections()
             if (j < width - 1) this->map[i][j]->east = this->map[i][j + 1];
 
             Room* room = this->map[i][j];
-            cout << "Room ( " << i << ", " << j << ") connections have been set up!" << endl;
+            //cout << "Room ( " << i << ", " << j << ") connections have been set up!" << endl;
         }
     }
 }
 
-void Dungeon::initCurrentRoom()
+void Dungeon::setCurrentRoom()
 {
 
     /*
@@ -224,6 +238,13 @@ void Dungeon::initCurrentRoom()
     }
 }
 
+void Dungeon::initRoomShape()
+{
+    this->currentRoomShape = RectangleShape(Vector2f(1280.f, 720.f));
+    this->currentRoomShape.setFillColor(Color::White);
+    //this->currentRoomShape.setPosition(Vector2f(this->currentRoom->posX, this->currentRoom->posY));
+}
+
 void Dungeon::removeEmptyRooms()
 {
     /*
@@ -240,5 +261,15 @@ void Dungeon::removeEmptyRooms()
         }
     }
 
+}
+
+
+/*
+    RENDER
+    FUNCTIONS
+*/
+void Dungeon::renderRoom(sf::RenderTarget* target)
+{
+    target->draw(this->currentRoomShape);
 }
 

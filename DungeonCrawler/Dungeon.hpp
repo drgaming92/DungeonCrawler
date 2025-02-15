@@ -5,7 +5,12 @@
 #ifndef DUNGEON_HPP
 #define DUNGEON_HPP
 
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+
 using namespace std;
+
+//====================================================================
 
 enum class RoomType
 {
@@ -13,7 +18,7 @@ enum class RoomType
 
     //Null room, should be de-allocated after init
     Empty,
-
+    
     //Good rooms
     Treasure,
 
@@ -23,6 +28,8 @@ enum class RoomType
     //Bad rooms
     Danger,
 };
+
+//====================================================================
 
 class Room
 {
@@ -43,8 +50,8 @@ public:
     bool visited;
 
     //Room Positional Properties
-    int posX;
-    int posY;
+    float posX;
+    float posY;
 
     //Room physical properties
     uint16_t height;
@@ -65,16 +72,22 @@ public:
 
 };
 
+//========================================================
+
 class Dungeon
 {
 private:
 
-    //Dimensions
+    //Current Room
+    sf::RectangleShape currentRoomShape;
+
+    //Map Dimensions
     uint8_t width;
     uint8_t height;
 
     //Init functions
     void initMap();
+
 public:
 
     //Game state variables
@@ -88,10 +101,16 @@ public:
     //Functions
     void allocateMemory();
     void setupConnections();
-    void initCurrentRoom();
+    void setCurrentRoom();
+    void initRoomShape();
+
     void removeEmptyRooms();
+
+    //Render Functions
+    void renderRoom(sf::RenderTarget* target);
 
 };
 
+//=================================================================
 
 #endif // DUNGEON_HPP

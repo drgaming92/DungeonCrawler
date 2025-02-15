@@ -13,7 +13,9 @@
 #include <string>
 #include <vector>
 
+#include "Camera.hpp"
 #include "Dungeon.hpp"
+#include "Entities.hpp"
 #include "Player.hpp"
 
 using namespace sf;
@@ -25,27 +27,29 @@ private:
 	uint8_t maxSprites = 127;
 
 	//Window
-	shared_ptr<RenderWindow> window;
+	RenderWindow* window;
 
 	//Mouse Positions
 	Vector2i mousePosWindow;
 	Vector2f mousPosView;
 
-	//Game Object Pointers
-	Dungeon* dungeon;
-	Room* currentRoomGame;
-	Player* player;
+	//Game Objects
+	Camera camera;
+	Dungeon dungeon;
 
-	//Game Object Shape Pointers
-	RectangleShape* currentRoomShape;
-	RectangleShape* playerShape;
+	//Game Entities
+	Player player;
+	vector<Enemy*> enemies;
 
 	//Init functions
-	void initVariables();
 	void initWindow();
+	void initCamera();
 	void initDungeon();
-	void initCurrentRoom();
 	void initPlayer();
+	void initEnemies(uint16_t numOfEnemies);
+
+	//Private Functions
+
 
 public:
 
@@ -57,16 +61,22 @@ public:
 	const bool isRunning();
 
 	//Update functions
+	void updateGameView();
+	void updatePlayer();
+	void updateEnemies();
 	void updateEvents();
 	void updateMousePositions();
-	void updateCurrentRoom();
-	void updatePlayer();
-	void update();
+	void update(); //Master update function
+
+	//Collision Functions
+	optional<IntRect> checkPlayerEnemyCollisions();
+	void handleCollisions(); //Master collision function
 
 	//Render Functions
 	void renderCurrentRoom();
+	void renderEnemies();
 	void renderPlayer();
-	void render();
+	void render(); //Master render function
 
 };
 

@@ -4,53 +4,70 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
-using namespace sf;
+using namespace std;
 
 class Player
 {
 private:
 
-	//Window
-	std::shared_ptr<RenderWindow> window;
+	//Player Bounds Box
+	sf::IntRect playerBoundsBox;
+
+	//Size Attributes
+	float height;
+	float width;
 
 	//Core Attributes
 	uint16_t health;
 	uint16_t stamina;
 	uint16_t mana;
 
+	//Clocks
+	sf::Clock sprintToggleClock;
+
 	//Movement Attributes
-	float speed;
+	float momentumX;
+	float momentumY;
+	float posX;
+	float posY;
+	bool sprinting;
 
 	//Survival Attributes (Not yet implemented)
 
 	//Init functions
-	void initWindow(std::shared_ptr<RenderWindow> windowPtr);
+	void initTexture();
+	void initShape();
 	void initCoreAttributes();
-	void initPosition();
-	void initSize();
 	void initMovement();
 
 public:
 
-	//Positional Variables
-	uint16_t posX;
-	uint16_t posY;
-	float worldPosX;
-	float worldPosY;
-
-	//Size Variables
-	uint16_t height;
-	uint16_t width;
+	//Player Texture
+	sf::Texture playerTexture;
 
 	//Constructors / Destructors
-	Player(std::shared_ptr<RenderWindow> windowPtr);
+	Player();
 	~Player();
 
-	//Movement Functions
-	void getMovement();
+	//Accessors
+	sf::IntRect getPlayerBounds();
+	const sf::Vector2f getPlayerPos();
+	const sf::Vector2f getMomentum();
+
+	//Collision Functions
+	void handleEnemyCollision(optional<sf::IntRect> enemyIntersection);
+
+	//Update Functions
+	void updateBoundsBox();
+	void updateSprint();
+	void updatePosition();
+
+	//Render Functions
+	void render(sf::Sprite& playerSprite, sf::RenderTarget* target);
 
 };
 
