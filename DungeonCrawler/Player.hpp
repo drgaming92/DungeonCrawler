@@ -16,6 +16,7 @@ private:
 
 	//Player Bounds Box
 	sf::IntRect playerBoundsBox;
+	sf::Vector2f collisionCorrection;
 
 	//Size Attributes
 	float height;
@@ -59,7 +60,9 @@ public:
 	const sf::Vector2f getMomentum();
 
 	//Collision Functions
-	void handleEnemyCollision(optional<sf::IntRect> enemyIntersection);
+	void handleCollisionWith(optional<sf::IntRect> enemyIntersection);
+	void handleWorldCollision(optional<sf::IntRect> worldIntersection);
+	void updateCollisionVector();
 
 	//Update Functions
 	void updateBoundsBox();

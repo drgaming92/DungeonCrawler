@@ -69,7 +69,9 @@ public:
 	void update(); //Master update function
 
 	//Collision Functions
-	optional<IntRect> checkPlayerEnemyCollisions();
+	void handlePlayerEnemyCollisions();
+	void handleEnemyEnemyCollisions();
+	void handlePlayerWorldCollisions();
 	void handleCollisions(); //Master collision function
 
 	//Render Functions

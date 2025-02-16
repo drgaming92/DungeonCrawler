@@ -13,7 +13,12 @@ using namespace std;
 */
 //=================================
 
-//Init Functions
+
+/*
+    INIT
+    FUNCTIONS
+*/
+
 void Room::initRoomType(RoomType pType)
 {
     this->type = pType;
@@ -25,10 +30,16 @@ void Room::initPositions()
     this->posY = 0.f;
 }
 
-void Room::initDimensions(float pHeight, float pWidth)
+void Room::initDimensions(int pHeight, int pWidth)
 {
     this->height = pHeight;
     this->width = pWidth;
+}
+
+void Room::initRoomBoundsBox()
+{
+    this->roomBoundsBox.position = Vector2i(this->posX, this->posY);
+    this->roomBoundsBox.size = Vector2i(this->width, this->height);
 }
 
 void Room::initPointers()
@@ -39,7 +50,12 @@ void Room::initPointers()
     this->south = nullptr;
 }
 
-//Constructors / Destructors
+
+/*
+    CONSTRUCTORS
+    DESTRUCTORS
+*/
+
 Room::Room()
 {
     /*
@@ -54,13 +70,14 @@ Room::Room()
 
     RoomType randomType = static_cast<RoomType>(roomTypedistrib(gen));
     
-    uniform_real_distribution<>floatDistrib(750.f, 1000.f);
-    float randomHeight = static_cast<float>(floatDistrib(gen));
-    float randomWidth = static_cast<float>(floatDistrib(gen));
+    uniform_int_distribution<>intDistrib(500.f, 1000.f);
+    int randomHeight = static_cast<int>(intDistrib(gen));
+    int randomWidth = static_cast<int>(intDistrib(gen));
 
     this->initRoomType(randomType);
     this->initPositions();
     this->initDimensions(randomHeight, randomWidth);
+    this->initRoomBoundsBox();
 
     this->initPointers();
 
@@ -79,6 +96,22 @@ Room::~Room()
     if (!this->west) { delete this->west; this->west = nullptr; }
     if (!this->south) { delete this->south; this->south = nullptr; }
 }
+
+
+/*
+    ACCESSORS
+*/
+
+IntRect Room::getRoomBoundsBox() const
+{
+    return this->roomBoundsBox;
+}
+
+
+/*
+    PUBLIC
+    FUNCTIONS
+*/
 
 void Room::checkAdjacent()
 {
@@ -105,53 +138,37 @@ void Room::checkAdjacent()
 */
 //=====================================
 
-//Init functions
+
+/*
+    INIT
+    FUNCTIONS
+*/
+
 void Dungeon::initMap()
 {
     this->map.resize(this->height, vector<Room*>(this->width, nullptr));
 }
 
-//Constructors / Destructors
-Dungeon::Dungeon()
+void Dungeon::initCurrentRoom()
 {
-    //Init map size
-    this->height = 8;
-    this->width = 8;
-    this->initMap();
+    this->currentRoomShape.setFillColor(Color::White);
 
+    this->currentRoomShape.setSize(Vector2f(
+        static_cast<float>(this->currentRoom->getRoomBoundsBox().size.x),
+        static_cast<float>(this->currentRoom->getRoomBoundsBox().size.y)
+    ));
 
-    //Init map data
-    this->allocateMemory();
-    this->setupConnections();
-    this->setCurrentRoom();
-
-    //Init room shape values
-    this->initRoomShape();
-
+    this->currentRoomShape.setPosition(Vector2f(
+        static_cast<float>(this->currentRoom->getRoomBoundsBox().position.x),
+        static_cast<float>(this->currentRoom->getRoomBoundsBox().position.y)
+    ));
 }
 
-Dungeon::~Dungeon()
-{
-    /*
-        De-allocate memory
-        - loops through each row
-        - loops through each column
-        - checks if the given pointer exists
-        - de-allocates the room and sets pointer to nullptr
-    */
-    for (auto& row : this->map)
-    {
-        for (auto& roomPtr : row)
-        {
-            if (roomPtr)
-            {
-                delete roomPtr;
-                roomPtr = nullptr;
-            }
-        }
-    }
 
-}
+/*
+    PRIVATE
+    FUNCTIONS
+*/
 
 void Dungeon::allocateMemory()
 {
@@ -227,6 +244,7 @@ void Dungeon::setCurrentRoom()
                 {
                     this->currentRoom = room;
                     startingRoomFound = true;
+                    this->initCurrentRoom();
                     break;
                 }
             }
@@ -236,13 +254,6 @@ void Dungeon::setCurrentRoom()
             break;
         }
     }
-}
-
-void Dungeon::initRoomShape()
-{
-    this->currentRoomShape = RectangleShape(Vector2f(1280.f, 720.f));
-    this->currentRoomShape.setFillColor(Color::White);
-    //this->currentRoomShape.setPosition(Vector2f(this->currentRoom->posX, this->currentRoom->posY));
 }
 
 void Dungeon::removeEmptyRooms()
@@ -258,6 +269,45 @@ void Dungeon::removeEmptyRooms()
         for (uint8_t j = 0; j < width; j++)
         {
             this->map[i][j]->checkAdjacent();
+        }
+    }
+
+}
+
+//Constructors / Destructors
+Dungeon::Dungeon()
+{
+    //Init map size
+    this->height = 8;
+    this->width = 8;
+    this->initMap();
+
+
+    //Init map data
+    this->allocateMemory();
+    this->setupConnections();
+    this->setCurrentRoom();
+
+}
+
+Dungeon::~Dungeon()
+{
+    /*
+        De-allocate memory
+        - loops through each row
+        - loops through each column
+        - checks if the given pointer exists
+        - de-allocates the room and sets pointer to nullptr
+    */
+    for (auto& row : this->map)
+    {
+        for (auto& roomPtr : row)
+        {
+            if (roomPtr)
+            {
+                delete roomPtr;
+                roomPtr = nullptr;
+            }
         }
     }
 

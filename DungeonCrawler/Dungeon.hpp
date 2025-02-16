@@ -34,11 +34,15 @@ enum class RoomType
 class Room
 {
 private:
+
+    //Room Bounds Box
+    sf::IntRect roomBoundsBox;
     
     //Room init functions
     void initRoomType(RoomType pType);
     void initPositions();
-    void initDimensions(float x, float y);
+    void initDimensions(int x, int y);
+    void initRoomBoundsBox();
     void initPointers();
 
 public:
@@ -54,8 +58,8 @@ public:
     float posY;
 
     //Room physical properties
-    uint16_t height;
-    uint16_t width;
+    int height;
+    int width;
 
     //Adjacent room pointers
     Room* north;
@@ -67,7 +71,10 @@ public:
     Room();
     ~Room();
 
-    //Functions
+    //Accessors
+    sf::IntRect getRoomBoundsBox() const;
+
+    //Public Functions
     void checkAdjacent();
 
 };
@@ -86,7 +93,14 @@ private:
     uint8_t height;
 
     //Init functions
+    void initCurrentRoom();
     void initMap();
+
+    //Private Functions
+    void allocateMemory();
+    void setupConnections();
+    void setCurrentRoom();
+    void removeEmptyRooms();
 
 public:
 
@@ -97,14 +111,6 @@ public:
     //Constuctor / Destructor
     Dungeon();
     ~Dungeon();
-
-    //Functions
-    void allocateMemory();
-    void setupConnections();
-    void setCurrentRoom();
-    void initRoomShape();
-
-    void removeEmptyRooms();
 
     //Render Functions
     void renderRoom(sf::RenderTarget* target);

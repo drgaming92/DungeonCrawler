@@ -87,37 +87,91 @@ const Vector2f Player::getMomentum()
 	FUNCTIONS
 */
 
-void Player::handleEnemyCollision(optional<IntRect> enemyIntersection)
+void Player::handleCollisionWith(optional<IntRect> intersection)
 {
 
 	/*
 		@return void
 
 		Deters player collision with enemy
-		- Sets position to before detected collision
-		- Move the player back until no longer colliding
+		- Resolve x collision
+		- Resolve y collision
 	*/
 
-	if (enemyIntersection.has_value())
+	if (intersection.has_value())
 	{
-		float reboundMult = 5.f;
-
-		this->posX -= this->momentumX * reboundMult;
-		this->posY -= this->momentumY * reboundMult;
-		this->updateBoundsBox();
-
-		optional<IntRect> intersection = this->playerBoundsBox.findIntersection(enemyIntersection.value());
-		while (intersection.has_value())
+		if (intersection.value().size.x < intersection.value().size.y)
 		{
-			this->posX -= this->momentumX;
-			this->posY -= this->momentumY;
-			this->updateBoundsBox();
-			intersection = this->playerBoundsBox.findIntersection(enemyIntersection.value());
+			//If intersection is on right side of player
+			if (intersection.value().position.x > this->playerBoundsBox.getCenter().x)
+			{
+				this->collisionCorrection.x -= intersection.value().size.x;
+				this->momentumX = 0.f;
+			}
+			//If intersection is on left side of player
+			else
+			{
+				this->collisionCorrection.x += intersection.value().size.x;
+				this->momentumX = 0.f;
+			}
 		}
+		else
+		{
+			//If collision is above the player
+			if (intersection.value().position.y < this->playerBoundsBox.getCenter().y)
+			{
+				this->collisionCorrection.y += intersection.value().size.y;
+				this->momentumY = 0.f;
+			}
+			//If collision is below the player
+			else
+			{
+				this->collisionCorrection.y -= intersection.value().size.y;
+				this->momentumY = 0.f;
+			}
+		}
+	}	
+}
 
-		this->momentumX *= -1 * reboundMult;
-		this->momentumY *= -1 * reboundMult;
+void Player::handleWorldCollision(optional<IntRect> worldIntersection)
+{
+	if (worldIntersection.value().size.x < worldIntersection.value().size.y)
+	{
+		//If intersection is on right side of player
+		if (worldIntersection.value().position.x > this->playerBoundsBox.getCenter().x)
+		{
+			this->collisionCorrection.x += worldIntersection.value().size.x;
+			this->momentumX = 0.f;
+		}
+		//If intersection is on left side of player
+		else
+		{
+			this->collisionCorrection.x -= worldIntersection.value().size.x;
+			this->momentumX = 0.f;
+		}
 	}
+	else
+	{
+		//If collision is above the player
+		if (worldIntersection.value().position.y < this->playerBoundsBox.getCenter().y)
+		{
+			this->collisionCorrection.y -= worldIntersection.value().size.y;
+			this->momentumY = 0.f;
+		}
+		//If collision is below the player
+		else
+		{
+			this->collisionCorrection.y += worldIntersection.value().size.y;
+			this->momentumY = 0.f;
+		}
+	}
+}
+
+void Player::updateCollisionVector()
+{
+	this->posX += this->collisionCorrection.x;
+	this->posY += this->collisionCorrection.y;
+	this->collisionCorrection = Vector2f(0.f, 0.f);
 }
 
 

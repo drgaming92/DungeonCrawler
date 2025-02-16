@@ -164,7 +164,18 @@ Enemy::~Enemy()
 
 
 /*
-	PUBLIC
+	ACCESSORS
+*/
+
+IntRect Enemy::getCollisionBox()
+{
+	this->updateBoundsBox();
+	return this->enemyBoundsBox;
+}
+
+
+/*
+	COLLISION
 	FUNCTIONS
 */
 
@@ -173,14 +184,48 @@ optional<IntRect> Enemy::checkCollisionWith(IntRect otherBoundsBox)
 	this->updateBoundsBox();
 
 	optional<IntRect> intersection = this->enemyBoundsBox.findIntersection(otherBoundsBox);
+	return intersection;
+}
+
+void Enemy::handleCollisionWith(optional<IntRect> intersection)
+{
+
+	/*
+		@return void
+
+		Resolves collisions
+		- Resolve x collision
+		- Resolve y collision
+	*/
 
 	if (intersection.has_value())
 	{
-		return intersection;
-	}
-	else
-	{
-		return intersection;
+		if (intersection.value().size.x < intersection.value().size.y)
+		{
+			//If intersection is on right side of player
+			if (intersection.value().position.x > this->enemyBoundsBox.getCenter().x)
+			{
+				this->enemyPosition.x -= intersection.value().size.x;
+			}
+			//If intersection is on left side of player
+			else
+			{
+				this->enemyPosition.x += intersection.value().size.x;
+			}
+		}
+		else
+		{
+			//If collision is above the player
+			if (intersection.value().position.y < this->enemyBoundsBox.getCenter().y)
+			{
+				this->enemyPosition.y += intersection.value().size.y;
+			}
+			//If collision is below the player
+			else
+			{
+				this->enemyPosition.y -= intersection.value().size.y;
+			}
+		}
 	}
 }
 

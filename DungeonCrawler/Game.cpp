@@ -63,7 +63,7 @@ Game::Game()
 	this->initDungeon();
 	this->initPlayer();
 
-	uint16_t numOfEnemies = 5;
+	uint16_t numOfEnemies = 28;
 	this->initEnemies(numOfEnemies);
 }
 
@@ -183,31 +183,71 @@ void Game::update()
 	FUNCTIONS
 */
 
-optional<IntRect> Game::checkPlayerEnemyCollisions()
+void Game::handlePlayerEnemyCollisions()
 {
-	bool collision = false;
 	optional<IntRect> intersection;
 	for (auto& enemy : this->enemies)
 	{
 		intersection = enemy->checkCollisionWith(this->player.getPlayerBounds());
 		if (intersection.has_value())
 		{
-			cout << "Collision Detected" << endl;
-			collision = true;
-			return intersection;
+			this->player.handleCollisionWith(intersection);
 		}
 	}
-	return intersection;
+}
+
+void Game::handleEnemyEnemyCollisions()
+{
+
+	/*
+		@return void
+
+		checks for collisions between each enemy
+		- Iterate over each enemy
+		- For each enemy check collisions with other enemies
+		- Ensure that the otherEnemy is not the same as the enemy that is checking
+	*/
+
+	optional<IntRect> intersection;
+	for (auto& enemy : this->enemies)
+	{
+		for (auto& otherEnemy : this->enemies)
+		{
+			if (otherEnemy->enemyPosition == enemy->enemyPosition)
+			{
+				continue;
+			}
+			else
+			{
+				intersection = enemy->checkCollisionWith(otherEnemy->getCollisionBox());
+				enemy->handleCollisionWith(intersection);
+			}
+		}
+	}
+}
+
+void Game::handlePlayerWorldCollisions()
+{
+	optional<IntRect> intersection = this->dungeon.currentRoom->getRoomBoundsBox().findIntersection(this->player.getPlayerBounds());
+
+	if (intersection.has_value())
+	{
+		this->player.handleWorldCollision(intersection);
+	}
 }
 
 //Master collision function
 void Game::handleCollisions()
 {
-	optional<IntRect> playerEnemyIntersection = this->checkPlayerEnemyCollisions();
-	if (playerEnemyIntersection.has_value())
-	{
-		this->player.handleEnemyCollision(playerEnemyIntersection);
-	}
+	//Entity-Entity Collisions
+	this->handlePlayerEnemyCollisions();
+	this->handleEnemyEnemyCollisions();
+
+	//Entity-World Collisions
+	this->handlePlayerWorldCollisions();
+
+	//Update Collision Vectors
+	this->player.updateCollisionVector();
 }
 
 

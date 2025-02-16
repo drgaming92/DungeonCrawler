@@ -80,8 +80,12 @@ public:
 	Enemy();
 	~Enemy();
 
-	//Public Functions
+	//Accessors
+	sf::IntRect getCollisionBox();
+
+	//Collision Functions
 	optional<sf::IntRect> checkCollisionWith(sf::IntRect otherBoundsBox);
+	void handleCollisionWith(optional<sf::IntRect> intersection);
 
 	//Movement Functions
 	void moveTowardsStop();
