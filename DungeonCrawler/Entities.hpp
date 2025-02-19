@@ -9,7 +9,13 @@
 
 using namespace std;
 
+
 //============================================
+/*
+	ENTITY
+	CLASS
+*/
+//==============================================
 
 class Entity
 {
@@ -47,6 +53,11 @@ public:
 };
 
 //==============================================
+/*
+	ENEMY
+	CLASS
+*/
+//===============================================
 
 class Enemy : public Entity, public sf::Drawable, sf::Transformable
 {
@@ -102,6 +113,11 @@ public:
 
 };
 
+//================================================
+/*
+	GOBLIN
+	CLASS
+*/
 //================================================
 
 class Goblin : public Enemy, public sf::Drawable, public sf::Transformable

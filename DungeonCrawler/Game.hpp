@@ -24,7 +24,7 @@ class Game
 {
 private:
 	//Variables
-	uint8_t maxSprites = 127;
+	short maxSprites = 127;
 
 	//Window
 	RenderWindow* window;
@@ -34,7 +34,7 @@ private:
 	Vector2f mousPosView;
 
 	//Game Objects
-	Camera camera;
+	Camera* camera;
 	Dungeon* dungeon;
 
 	//Game Entities
@@ -47,9 +47,6 @@ private:
 	void initDungeonClass(int pWidth, int pHeight);
 	void initPlayer();
 	void initEnemies(int numOfEnemies);
-
-	//Private Functions
-
 
 public:
 

@@ -301,6 +301,7 @@ void Player::updatePlayerShape()
 	this->playerShape[1].texCoords = Vector2f(this->width, 0.f);
 	this->playerShape[2].texCoords = Vector2f(0.f, this->height);
 	this->playerShape[3].texCoords = Vector2f(this->width, this->height);
+
 }
 
 

@@ -6,25 +6,36 @@
 
 using namespace std;
 
+
+//============================================
+/*
+	CAMERA
+	CLASS
+*/
+//============================================
+
 class Camera
 {
 private:
 
-	//View Attributes
-	float centerX;
-	float centerY;
-	sf::Vector2f viewCenter;
-	sf::Vector2f viewSize;
+	//Game View Attributes
+	sf::Vector2f gameViewCenter;
+	sf::Vector2f gameViewSize;
+
+	//UI View Attributes
+	sf::Vector2f uiViewCenter;
+	sf::Vector2f uiViewSize;
 
 	//Init Functions
-	void initAttributes();
+	void initGameViewAttributes();
+	void initUI_ViewAttributes();
 	void initGameView();
 
 public:
 
 	//Views
 	sf::View gameView;
-	//sf::View uiView;
+	sf::View uiView;
 
 	//Constructors / Destructors
 	Camera();
@@ -35,6 +46,61 @@ public:
 
 };
 
+
+//=====================================================
+/*
+	BUTTON
+	CLASS
+*/
+//=====================================================
+
+class Button : public sf::Drawable, public sf::Transformable
+{
+private:
+
+	//Button Vertex Array
+	sf::VertexArray buttonVertexArray;
+
+	//Init Functions
+	void initVertexArray();
+
+public:
+
+	//Constructors / Destructors
+	Button();
+	~Button();
+
+	//Render Functions
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+};
+
+
+//=====================================================
+/*
+	USER INTERFACE
+	CLASS
+*/
+//=====================================================
+
+class UI
+{
+private:
+
+	//Status Bars
+	sf::RectangleShape barBacking;
+	sf::RectangleShape playerHealthBar;
+
+	//Init Functions
+	void initButtons();
+
+public:
+
+	//Constructors / Destructors
+	UI();
+	~UI();
+
+};
 
 
 #endif // CAMERA_HPP

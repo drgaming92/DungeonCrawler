@@ -15,7 +15,7 @@ void Game::initWindow()
 
 void Game::initCamera()
 {
-	this->camera = Camera();
+	this->camera = new Camera();
 }
 
 void Game::initDungeonClass(int width, int height)
@@ -96,7 +96,7 @@ void Game::updateGameView()
 		Sets the view to the player
 		see "Camera.cpp > Public Functions > updateGameCenter" for information
 	*/
-	this->camera.updateGameCenter(this->player->getPlayerPos(), this->player->getMomentum());
+	this->camera->updateGameCenter(this->player->getPlayerPos(), this->player->getMomentum());
 }
 
 void Game::updatePlayer()
@@ -288,7 +288,7 @@ void Game::render()
 	this->window->clear(Color::Black);
 
 	//Render Game Objects
-	this->window->setView(this->camera.gameView);
+	this->window->setView(this->camera->gameView);
 
 	this->renderCurrentRoom();
 	this->renderEnemies();
