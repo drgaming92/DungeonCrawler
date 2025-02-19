@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class Player
+class Player : public sf::Drawable, public sf::Transformable
 {
 private:
 
@@ -18,14 +18,18 @@ private:
 	sf::IntRect playerBoundsBox;
 	sf::Vector2f collisionCorrection;
 
+	//Player Vertex Array
+	sf::VertexArray playerShape;
+	sf::Texture playerTexture;
+
 	//Size Attributes
-	float height;
-	float width;
+	int height;
+	int width;
 
 	//Core Attributes
-	uint16_t health;
-	uint16_t stamina;
-	uint16_t mana;
+	int health;
+	int stamina;
+	int mana;
 
 	//Clocks
 	sf::Clock sprintToggleClock;
@@ -41,14 +45,12 @@ private:
 
 	//Init functions
 	void initTexture();
-	void initShape();
+	void initSize();
 	void initCoreAttributes();
 	void initMovement();
+	void initPlayerShape();
 
 public:
-
-	//Player Texture
-	sf::Texture playerTexture;
 
 	//Constructors / Destructors
 	Player();
@@ -68,9 +70,10 @@ public:
 	void updateBoundsBox();
 	void updateSprint();
 	void updatePosition();
+	void updatePlayerShape();
 
 	//Render Functions
-	void render(sf::Sprite& playerSprite, sf::RenderTarget* target);
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 };
 

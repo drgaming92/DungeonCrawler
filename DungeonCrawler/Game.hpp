@@ -35,18 +35,18 @@ private:
 
 	//Game Objects
 	Camera camera;
-	Dungeon dungeon;
+	Dungeon* dungeon;
 
 	//Game Entities
-	Player player;
+	Player* player;
 	vector<Enemy*> enemies;
 
 	//Init functions
 	void initWindow();
 	void initCamera();
-	void initDungeon();
+	void initDungeonClass(int pWidth, int pHeight);
 	void initPlayer();
-	void initEnemies(uint16_t numOfEnemies);
+	void initEnemies(int numOfEnemies);
 
 	//Private Functions
 

@@ -47,6 +47,9 @@ private:
 
 public:
 
+    //ID Number
+    int id;
+
     //Room gameplay properties
     RoomType type;
 
@@ -54,8 +57,8 @@ public:
     bool visited;
 
     //Room Positional Properties
-    float posX;
-    float posY;
+    int posX;
+    int posY;
 
     //Room physical properties
     int height;
@@ -89,8 +92,8 @@ private:
     sf::RectangleShape currentRoomShape;
 
     //Map Dimensions
-    uint8_t width;
-    uint8_t height;
+    int width;
+    int height;
 
     //Init functions
     void initCurrentRoom();
@@ -109,8 +112,10 @@ public:
     Room* currentRoom;
 
     //Constuctor / Destructor
-    Dungeon();
+    Dungeon(int width=8, int height=8);
     ~Dungeon();
+
+    //Update Functions
 
     //Render Functions
     void renderRoom(sf::RenderTarget* target);

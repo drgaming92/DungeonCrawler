@@ -26,8 +26,8 @@ void Room::initRoomType(RoomType pType)
 
 void Room::initPositions()
 {
-    this->posX = 0.f;
-    this->posY = 0.f;
+    this->posX = 0;
+    this->posY = 0;
 }
 
 void Room::initDimensions(int pHeight, int pWidth)
@@ -39,6 +39,7 @@ void Room::initDimensions(int pHeight, int pWidth)
 void Room::initRoomBoundsBox()
 {
     this->roomBoundsBox.position = Vector2i(this->posX, this->posY);
+
     this->roomBoundsBox.size = Vector2i(this->width, this->height);
 }
 
@@ -70,13 +71,14 @@ Room::Room()
 
     RoomType randomType = static_cast<RoomType>(roomTypedistrib(gen));
     
-    uniform_int_distribution<>intDistrib(500.f, 1000.f);
-    int randomHeight = static_cast<int>(intDistrib(gen));
-    int randomWidth = static_cast<int>(intDistrib(gen));
+    uniform_int_distribution<>intDistrib(500, 1000);
+    int randomHeight = intDistrib(gen);
+    int randomWidth = intDistrib(gen);
 
     this->initRoomType(randomType);
     this->initPositions();
     this->initDimensions(randomHeight, randomWidth);
+
     this->initRoomBoundsBox();
 
     this->initPointers();
@@ -123,10 +125,10 @@ void Room::checkAdjacent()
         - checks if target room is type empty
         - if both are true then delete that room and set pointer to nullptr
     */
-    if (this->north && this->north->type == RoomType::Empty) { delete this->north; this->north = nullptr; }
-    if (this->east && this->east->type == RoomType::Empty) { delete this->east; this->east = nullptr; }
-    if (this->west && this->west->type == RoomType::Empty) { delete this->west; this->west = nullptr; }
-    if (this->south && this->south->type == RoomType::Empty) { delete this->south; this->south = nullptr; }
+    if (this->north && this->north->type == RoomType::Empty) { delete this->north; }
+    if (this->east && this->east->type == RoomType::Empty) { delete this->east; }
+    if (this->west && this->west->type == RoomType::Empty) { delete this->west; }
+    if (this->south && this->south->type == RoomType::Empty) { delete this->south; }
 }
 
 
@@ -181,11 +183,15 @@ void Dungeon::allocateMemory()
         - dynamically allocates memory for a new room
         - assigns room pointer
     */
+
+    int idCounter = 1;
     for (auto& row : this->map)
     {
         for (auto& roomPtr : row)
         {
             roomPtr = new Room();
+            roomPtr->id = idCounter;
+            idCounter++;
         }
     }
 
@@ -213,9 +219,6 @@ void Dungeon::setupConnections()
             if (j > 0) this->map[i][j]->west = this->map[i][j - 1];
             //check if it isn't the last column
             if (j < width - 1) this->map[i][j]->east = this->map[i][j + 1];
-
-            Room* room = this->map[i][j];
-            //cout << "Room ( " << i << ", " << j << ") connections have been set up!" << endl;
         }
     }
 }
@@ -244,7 +247,6 @@ void Dungeon::setCurrentRoom()
                 {
                     this->currentRoom = room;
                     startingRoomFound = true;
-                    this->initCurrentRoom();
                     break;
                 }
             }
@@ -275,11 +277,11 @@ void Dungeon::removeEmptyRooms()
 }
 
 //Constructors / Destructors
-Dungeon::Dungeon()
+Dungeon::Dungeon(int pWidth, int pHeight)
 {
     //Init map size
-    this->height = 8;
-    this->width = 8;
+    this->width = pWidth;
+    this->height = pHeight;
     this->initMap();
 
 
@@ -287,7 +289,10 @@ Dungeon::Dungeon()
     this->allocateMemory();
     this->setupConnections();
     this->setCurrentRoom();
+    this->initCurrentRoom();
 
+    //Delete Empty Rooms
+    //this->removeEmptyRooms();
 }
 
 Dungeon::~Dungeon()
@@ -312,6 +317,14 @@ Dungeon::~Dungeon()
     }
 
 }
+
+
+/*
+    UPDATE
+    FUNCTIONS
+*/
+
+
 
 
 /*

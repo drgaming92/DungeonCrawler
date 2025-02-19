@@ -13,7 +13,7 @@ void Camera::initAttributes()
 	this->centerY = 200.f;
 	this->viewCenter = { this->centerX, this->centerY };
 
-	this->viewSize = { 640.f, 360.f };
+	this->viewSize = { 320.f, 180.f };
 }
 
 void Camera::initGameView()
@@ -52,8 +52,8 @@ void Camera::updateGameCenter(Vector2f playerPos, Vector2f playerMomentum)
 		- Sets the updated center position
 	*/
 	Vector2f newCenter = playerPos;
-	newCenter.x -= playerMomentum.x - 15;
-	newCenter.y -= playerMomentum.y - 15;
+	newCenter.x -= playerMomentum.x - 15.f;
+	newCenter.y -= playerMomentum.y - 15.f;
 	this->gameView.setCenter(newCenter);
 
 }

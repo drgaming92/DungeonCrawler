@@ -5,7 +5,7 @@ using namespace sf;
 int main()
 {
 	//Init game engine
-	Game game;
+	Game game{};
 
 	//Game Loop
 	while (game.isRunning())

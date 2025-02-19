@@ -26,7 +26,7 @@ private:
 protected:
 
 	//Core Attributes
-	uint16_t health;
+	int health;
 
 	//Size Attributes
 	float height;
@@ -48,17 +48,20 @@ public:
 
 //==============================================
 
-class Enemy : public Entity
+class Enemy : public Entity, public sf::Drawable, sf::Transformable
 {
 private:
 
 	//Enemy Bound Box
 	sf::IntRect enemyBoundsBox;
 
+	//Shape
+	sf::VertexArray enemyShape;
+
 	//Patrol/Movement Attributes
 	sf::Clock patrolToggleClock;
 	vector<sf::Vector2f> stopPoints;
-	uint8_t currentStop;
+	short currentStop;
 	float speed;
 
 	//Core Attributes
@@ -67,10 +70,10 @@ private:
 	void initAttributes();
 	void initTexture();
 	void initPos(sf::Vector2f position);
-	void initPatrol(uint8_t numOfStops);
+	void initEnemyShape();
+	void initPatrol(short numOfStops);
 
 public:
-
 
 	//Enemy Sprite Attributes
 	sf::Texture enemyTexture;
@@ -92,13 +95,43 @@ public:
 
 	//Update Functions
 	void updateBoundsBox();
+	void updateEnemyShape();
 
-	//Render Functions
-	void render(sf::Sprite& enemySprite, sf::RenderTarget* target);
+	//Public Functions
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 };
 
 //================================================
+
+class Goblin : public Enemy, public sf::Drawable, public sf::Transformable
+{
+private:
+
+	//Bounds Box
+	sf::IntRect boundsBox;
+
+	//Shape
+	sf::VertexArray goblinShape;
+
+	//Core Attributes
+	int health;
+	int stamina;
+
+	//Init Functions
+	void initVertexArray();
+	void initCoreAttributes();
+
+public:
+
+	//Constructors / Destructors
+	Goblin();
+	~Goblin();
+
+	//Public Functions
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+};
 
 
 #endif // ENTITIES_HPP

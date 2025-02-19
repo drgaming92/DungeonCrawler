@@ -45,9 +45,9 @@ Vector2f Entity::getRandomPos()
 {
 	random_device rd;
 	mt19937 gen(rd());
-	uniform_real_distribution<>floatDistrib(-100.f, 1000.f);
+	uniform_real_distribution<>floatDristib(-100.0f, 1000.0f);
 
-	return Vector2f(static_cast<int>(floatDistrib(gen)), static_cast<int>(floatDistrib(gen)));
+	return Vector2f(static_cast<float>(floatDristib(gen)), static_cast<float>(floatDristib(gen)));
 }
 
 
@@ -98,16 +98,36 @@ void Enemy::initAttributes()
 
 	this->speed = 2.f;
 
-	this->height = 30;
-	this->width = 30;
+	this->height = 16;
+	this->width = 16;
 }
 
 void Enemy::initTexture()
 {
-	if (!this->enemyTexture.loadFromFile("./Textures/EnemyTextures/defaultEnemy.png"))
+	Texture texture;
+	if (!texture.loadFromFile("./Textures/EnemyTextures/defaultEnemy.png"))
 	{
 		cout << "Error::Enemy::initTexture::Could not load file" << endl;
 	}
+	this->enemyTexture = texture;
+}
+
+void Enemy::initEnemyShape()
+{
+	this->enemyShape.setPrimitiveType(PrimitiveType::TriangleStrip);
+	this->enemyShape.resize(4);
+
+	//Vertice Positions
+	this->enemyShape[0].position = Vector2f(this->enemyPosition.x, this->enemyPosition.y);
+	this->enemyShape[1].position = Vector2f(this->enemyPosition.x + this->width, this->enemyPosition.y);
+	this->enemyShape[2].position = Vector2f(this->enemyPosition.x, this->enemyPosition.y + this->height);
+	this->enemyShape[3].position = Vector2f(this->enemyPosition.x + this->width, this->enemyPosition.y + this->height);
+
+	//Texture Positions
+	this->enemyShape[0].texCoords = Vector2f(0.f, 0.f);
+	this->enemyShape[1].texCoords = Vector2f(this->width, 0.f);
+	this->enemyShape[2].texCoords = Vector2f(0.f, this->height);
+	this->enemyShape[3].texCoords = Vector2f(this->width, this->height);
 }
 
 void Enemy::initPos(Vector2f position)
@@ -115,7 +135,7 @@ void Enemy::initPos(Vector2f position)
 	this->enemyPosition = position;
 }
 
-void Enemy::initPatrol(uint8_t numOfStops=2)
+void Enemy::initPatrol(short numOfStops=2)
 {
 
 	/*
@@ -151,9 +171,10 @@ void Enemy::initPatrol(uint8_t numOfStops=2)
 Enemy::Enemy()
 {
 	//Init Functions
-	this->initTexture();
 	this->initAttributes();
+	this->initTexture();
 	this->initPos(this->getRandomPos());
+	this->initEnemyShape();
 	this->initPatrol();
 }
 
@@ -325,19 +346,94 @@ void Enemy::updateBoundsBox()
 	this->enemyBoundsBox.size.y = static_cast<int>(this->height);
 }
 
+void Enemy::updateEnemyShape()
+{
+	//Update the enemy shape position
+	this->enemyShape[0].position = Vector2f(this->enemyPosition.x, this->enemyPosition.y);
+	this->enemyShape[1].position = Vector2f(this->enemyPosition.x + this->width, this->enemyPosition.y);
+	this->enemyShape[2].position = Vector2f(this->enemyPosition.x, this->enemyPosition.y + this->height);
+	this->enemyShape[3].position = Vector2f(this->enemyPosition.x + this->width, this->enemyPosition.y + this->height);
+
+	//Update the texture vertices
+	this->enemyShape[0].texCoords = Vector2f(0.f, 0.f);
+	this->enemyShape[1].texCoords = Vector2f(this->width, 0.f);
+	this->enemyShape[2].texCoords = Vector2f(0.f, this->height);
+	this->enemyShape[3].texCoords = Vector2f(this->width, this->height);
+}
+
 
 /*
-	RENDER
+	PUBLIC
 	FUNCTIONS
 */
 
-void Enemy::render(Sprite& enemySprite, RenderTarget* target)
+void Enemy::draw(RenderTarget& target, RenderStates states) const
 {
-	//Set sprite attributes
-	enemySprite.setScale(Vector2f(1.875f, 1.875f));
-	enemySprite.setPosition(this->enemyPosition);
-	enemySprite.setTexture(this->enemyTexture);
+	states.transform *= Transformable::getTransform();
+	states.texture = &this->enemyTexture;
+	states.blendMode = BlendAlpha;
 
-	target->draw(enemySprite);
+	target.draw(this->enemyShape, states);
+}
+
+
+
+//==================================================
+/*
+	GOBLIN
+	CLASS
+	FUNCTIONS
+*/
+//==================================================
+
+
+/*
+	INIT
+	FUNCTIONS
+*/
+
+void Goblin::initVertexArray()
+{
+	this->goblinShape.setPrimitiveType(PrimitiveType::Triangles);
+	this->goblinShape.resize(3);
+
+	//Vertice Positions
+	this->goblinShape[0].position = Vector2f(10.f, 10.f);
+	this->goblinShape[1].position = Vector2f(10.f, 100.f);
+	this->goblinShape[2].position = Vector2f(100.f, 100.f);
+}
+
+void Goblin::initCoreAttributes()
+{
+	this->health = 100;
+	this->stamina = 100;
+}
+
+
+/*
+	CONSTRUCTORS
+	DESTRUCTORS
+*/
+
+Goblin::Goblin()
+{
+	this->initVertexArray();
+	this->initCoreAttributes();
+}
+
+Goblin::~Goblin()
+{
+
+}
+
+
+/*
+	PUBLIC FUNCTIONS
+*/
+
+void Goblin::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	states.transform *= Transformable::getTransform();
+	target.draw(this->goblinShape);
 }
 

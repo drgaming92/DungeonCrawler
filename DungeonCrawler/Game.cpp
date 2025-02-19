@@ -18,22 +18,20 @@ void Game::initCamera()
 	this->camera = Camera();
 }
 
-void Game::initDungeon()
+void Game::initDungeonClass(int width, int height)
 {
-	uint8_t width = 16;
-	uint8_t height = 16;
-	this->dungeon = Dungeon();
+	this->dungeon = new Dungeon(width, height);
 }
 
 void Game::initPlayer()
 {
-	this->player = Player();
+	this->player = new Player();
 }
 
-void Game::initEnemies(uint16_t numOfEnemies)
+void Game::initEnemies(int numOfEnemies)
 {
 	this->enemies.reserve(static_cast<int>(this->maxSprites));
-	if (numOfEnemies > this->maxSprites)
+	if (numOfEnemies >= this->maxSprites)
 	{
 		this->enemies.resize(static_cast<int>(this->maxSprites));
 	}
@@ -60,10 +58,10 @@ void Game::initEnemies(uint16_t numOfEnemies)
 Game::Game()
 {
 	this->initWindow();
-	this->initDungeon();
+	this->initDungeonClass(8, 8);
 	this->initPlayer();
 
-	uint16_t numOfEnemies = 28;
+	int numOfEnemies = 20;
 	this->initEnemies(numOfEnemies);
 }
 
@@ -98,7 +96,7 @@ void Game::updateGameView()
 		Sets the view to the player
 		see "Camera.cpp > Public Functions > updateGameCenter" for information
 	*/
-	this->camera.updateGameCenter(this->player.getPlayerPos(), this->player.getMomentum());
+	this->camera.updateGameCenter(this->player->getPlayerPos(), this->player->getMomentum());
 }
 
 void Game::updatePlayer()
@@ -109,7 +107,7 @@ void Game::updatePlayer()
 		Sets new position based on input from player
 		see "Player.cpp > Update Functions > updatePosition" for information
 	*/
-	this->player.updatePosition();
+	this->player->updatePosition();
 }
 
 void Game::updateEnemies()
@@ -188,10 +186,10 @@ void Game::handlePlayerEnemyCollisions()
 	optional<IntRect> intersection;
 	for (auto& enemy : this->enemies)
 	{
-		intersection = enemy->checkCollisionWith(this->player.getPlayerBounds());
+		intersection = enemy->checkCollisionWith(this->player->getPlayerBounds());
 		if (intersection.has_value())
 		{
-			this->player.handleCollisionWith(intersection);
+			this->player->handleCollisionWith(intersection);
 		}
 	}
 }
@@ -228,11 +226,11 @@ void Game::handleEnemyEnemyCollisions()
 
 void Game::handlePlayerWorldCollisions()
 {
-	optional<IntRect> intersection = this->dungeon.currentRoom->getRoomBoundsBox().findIntersection(this->player.getPlayerBounds());
+	optional<IntRect> intersection = this->dungeon->currentRoom->getRoomBoundsBox().findIntersection(this->player->getPlayerBounds());
 
 	if (intersection.has_value())
 	{
-		this->player.handleWorldCollision(intersection);
+		this->player->handleWorldCollision(intersection);
 	}
 }
 
@@ -243,11 +241,11 @@ void Game::handleCollisions()
 	this->handlePlayerEnemyCollisions();
 	this->handleEnemyEnemyCollisions();
 
-	//Entity-World Collisions
+	//Player-World Collisions
 	this->handlePlayerWorldCollisions();
 
 	//Update Collision Vectors
-	this->player.updateCollisionVector();
+	this->player->updateCollisionVector();
 }
 
 
@@ -255,6 +253,7 @@ void Game::handleCollisions()
 	RENDER
 	FUNCTIONS
 */
+
 void Game::renderCurrentRoom()
 {
 	/*
@@ -264,22 +263,21 @@ void Game::renderCurrentRoom()
 		see "Dungeon.cpp > Render Functions > renderRoom"
 	*/
 
-	this->dungeon.renderRoom(this->window);
+	this->dungeon->renderRoom(this->window);
 }
 
 void Game::renderPlayer()
 {
-	Sprite playerSprite(this->player.playerTexture);
-	this->player.render(playerSprite, this->window);
+	this->player->updatePlayerShape();
+	this->window->draw(*this->player);
 }
 
 void Game::renderEnemies()
 {
 	for (auto& enemy : this->enemies)
 	{
-		Texture enemyTexture = enemy->enemyTexture;
-		Sprite enemySprite(enemyTexture);
-		enemy->render(enemySprite, this->window);
+		enemy->updateEnemyShape();
+		this->window->draw(*enemy);
 	}
 }
 

@@ -21,10 +21,10 @@ void Player::initTexture()
 	}
 }
 
-void Player::initShape()
+void Player::initSize()
 {
-	this->height = 30.f;
-	this->width = 30.f;	
+	this->height = 16;
+	this->width = 16;
 }
 
 void Player::initCoreAttributes()
@@ -45,14 +45,37 @@ void Player::initMovement()
 	this->sprinting = false;
 }
 
+void Player::initPlayerShape()
+{
+	this->playerShape.setPrimitiveType(PrimitiveType::TriangleStrip);
+	this->playerShape.resize(4);
 
-//Constructors / Destructors
+	//Set Vertex Positions
+	this->playerShape[0].position = Vector2f(this->posX, this->posY);
+	this->playerShape[1].position = Vector2f(this->posX + this->width, this->posY);
+	this->playerShape[2].position = Vector2f(this->posX, this->posY + this->height);
+	this->playerShape[3].position = Vector2f(this->posX + this->width, this->posY + this->height);
+
+	//Set Texture Points
+	this->playerShape[0].texCoords = Vector2f(0.f, 0.f);
+	this->playerShape[1].texCoords = Vector2f(this->width, 0.f);
+	this->playerShape[2].texCoords = Vector2f(0.f, this->height);
+	this->playerShape[3].texCoords = Vector2f(this->width, this->height);
+}
+
+
+/*
+	CONSTRUCTORS
+	DESTRUCTORS
+*/
+
 Player::Player()
 {
 	this->initTexture();
-	this->initShape();
+	this->initSize();
 	this->initCoreAttributes();
 	this->initMovement();
+	this->initPlayerShape();
 }
 
 Player::~Player()
@@ -135,18 +158,24 @@ void Player::handleCollisionWith(optional<IntRect> intersection)
 
 void Player::handleWorldCollision(optional<IntRect> worldIntersection)
 {
+	if (worldIntersection.value().position == this->playerBoundsBox.position
+	 && worldIntersection.value().size	   == this->playerBoundsBox.size)
+	{
+		return;
+	}
+
 	if (worldIntersection.value().size.x < worldIntersection.value().size.y)
 	{
 		//If intersection is on right side of player
 		if (worldIntersection.value().position.x > this->playerBoundsBox.getCenter().x)
 		{
-			this->collisionCorrection.x += worldIntersection.value().size.x;
+			this->collisionCorrection.x += this->momentumX;
 			this->momentumX = 0.f;
 		}
 		//If intersection is on left side of player
 		else
 		{
-			this->collisionCorrection.x -= worldIntersection.value().size.x;
+			this->collisionCorrection.x -= this->momentumX;
 			this->momentumX = 0.f;
 		}
 	}
@@ -155,13 +184,13 @@ void Player::handleWorldCollision(optional<IntRect> worldIntersection)
 		//If collision is above the player
 		if (worldIntersection.value().position.y < this->playerBoundsBox.getCenter().y)
 		{
-			this->collisionCorrection.y -= worldIntersection.value().size.y;
+			this->collisionCorrection.y -= this->momentumY;
 			this->momentumY = 0.f;
 		}
 		//If collision is below the player
 		else
 		{
-			this->collisionCorrection.y += worldIntersection.value().size.y;
+			this->collisionCorrection.y += this->momentumY;
 			this->momentumY = 0.f;
 		}
 	}
@@ -198,7 +227,7 @@ void Player::updateSprint()
 		- If it is then toggle sprint
 	*/
 
-	float sprintToggleDelay = 0.2f;
+	const float sprintToggleDelay = 0.2f;
 	if (Keyboard::isKeyPressed(Keyboard::Key::LShift))
 	{
 		if (this->sprintToggleClock.getElapsedTime().asSeconds() >= sprintToggleDelay)
@@ -215,7 +244,7 @@ void Player::updatePosition()
 {
 
 	/*
-		@return void
+		@return voidssss
 
 		Changes the player's position
 		- Checks if sprinting
@@ -245,17 +274,33 @@ void Player::updatePosition()
 
 	if (this->sprinting)
 	{
-		this->momentumX = this->momentumX * 0.72f;
-		this->momentumY = this->momentumY * 0.72f;
+		this->momentumX *= 0.65f;
+		this->momentumY *= 0.65f;
 	}
 	else
 	{
-		this->momentumX = this->momentumX * 0.65f;
-		this->momentumY = this->momentumY * 0.65f;
+		this->momentumX *= 0.52f;
+		this->momentumY *= 0.52f;
 	}
-	this->posX += momentumX;
-	this->posY += momentumY;
 
+	this->posX += this->momentumX;
+	this->posY += this->momentumY;
+
+}
+
+void Player::updatePlayerShape()
+{
+	//Set Vertex Positions
+	this->playerShape[0].position = Vector2f(this->posX, this->posY);
+	this->playerShape[1].position = Vector2f(this->posX + this->width, this->posY);
+	this->playerShape[2].position = Vector2f(this->posX, this->posY + this->height);
+	this->playerShape[3].position = Vector2f(this->posX + this->width, this->posY + this->height);
+
+	//Set Texture Points
+	this->playerShape[0].texCoords = Vector2f(0.f, 0.f);
+	this->playerShape[1].texCoords = Vector2f(this->width, 0.f);
+	this->playerShape[2].texCoords = Vector2f(0.f, this->height);
+	this->playerShape[3].texCoords = Vector2f(this->width, this->height);
 }
 
 
@@ -263,12 +308,13 @@ void Player::updatePosition()
 	RENDER
 	FUNCTIONS
 */
-void Player::render(Sprite& playerSprite, RenderTarget* target)
-{
-	playerSprite.setTexture(this->playerTexture);
-	playerSprite.setScale(Vector2f(1.875, 1.875));
-	playerSprite.setPosition(Vector2f(this->getPlayerPos()));
 
-	target->draw(playerSprite);
+void Player::draw(RenderTarget& target, RenderStates states) const
+{
+	states.transform *= Transformable::getTransform();
+	states.texture = &this->playerTexture;
+	states.blendMode = BlendAlpha;
+
+	target.draw(this->playerShape, states);
 }
 
